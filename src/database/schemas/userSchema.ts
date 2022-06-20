@@ -9,4 +9,4 @@ export class User {
   phone: number;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(User);
+export const UserSchema = SchemaFactory.createForClass(User);
