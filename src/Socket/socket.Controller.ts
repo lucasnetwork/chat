@@ -27,10 +27,12 @@ export class SocketProvider {
   @SubscribeMessage('message')
   async sendMessage(socket: Socket, data: any): Promise<void> {
     try {
-      console.log(data);
       const existUser = await this.userService.find(data.phoneTo as number);
       if (existUser) {
-        socket.to(existUser?.phone?.toString()).emit('message', data.message);
+        socket.to(existUser?.phone?.toString()).emit('message', {
+          phone: data.phone,
+          message: data.message,
+        });
       }
     } catch {
       console.log('error');
