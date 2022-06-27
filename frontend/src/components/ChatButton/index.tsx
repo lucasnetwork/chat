@@ -1,5 +1,5 @@
 /* eslint-disable react/function-component-definition */
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import Container from './styles';
 
 const ChatButton: React.FC<{
@@ -7,10 +7,11 @@ const ChatButton: React.FC<{
     messages: string[];
     phone: string;
   };
-}> = ({ data }) => {
+  onClick: MouseEventHandler<HTMLButtonElement>;
+}> = ({ data, onClick }) => {
   return (
     <Container>
-      <button type="button">
+      <button type="button" onClick={onClick}>
         <img />
         <div>
           <h2>{data.phone}</h2>

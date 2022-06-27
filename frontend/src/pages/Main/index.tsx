@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import socketIOClient from 'socket.io-client';
 import Container from './styles';
 import ChatButton from '../../components/ChatButton';
+import Chat from '../../components/Chat';
 
 const socket = socketIOClient('http://localhost:3000');
 function Main() {
@@ -11,6 +12,9 @@ function Main() {
   const [messages, setMessages] = useState<
     { messages: string[]; phone: string }[]
   >([]);
+  const [phoneContact, setPhoneContact] = useState<
+    { phone: string; index: number } | undefined
+  >(undefined);
   useEffect(() => {
     socket.on('connect', () => {
       console.log('conectado');
@@ -42,33 +46,71 @@ function Main() {
   return (
     <Container>
       <aside>
-        {messages.map((message) => (
-          <ChatButton key={message.phone} data={message} />
+        <button type="button">Novo Contato</button>
+        {messages.map((message, index) => (
+          <ChatButton
+            key={message.phone}
+            data={message}
+            onClick={() => {
+              setPhoneContact({
+                phone: message.phone,
+                index,
+              });
+            }}
+          />
         ))}
       </aside>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log(e);
-          socket.emit('message', {
-            phoneTo: phone,
-            phone: localStorage.getItem('phone'),
-            message: data,
-          });
-        }}
-      >
-        <input
-          placeholder="telefone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+      {phoneContact ? (
+        <Chat
+          onSubmit={(e) => {
+            console.log(e);
+            socket.emit('message', {
+              phoneTo: phone,
+              phone: localStorage.getItem('phone'),
+              message: data,
+            });
+            setMessages((props) => [
+              ...props,
+              {
+                messages: [data],
+                phone,
+              },
+            ]);
+          }}
         />
-        <input
-          placeholder="Digite aqui"
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-        />
-        <button type="submit">clicar</button>
-      </form>
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            console.log(e);
+            socket.emit('message', {
+              phoneTo: phone,
+              phone: localStorage.getItem('phone'),
+              message: data,
+            });
+            setMessages((props) => [
+              ...props,
+              {
+                messages: [data],
+                phone,
+              },
+            ]);
+            setPhone('');
+          }}
+        >
+          <input
+            placeholder="telefone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <input
+            placeholder="Digite aqui"
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+          />
+          <button type="submit">clicar</button>
+        </form>
+      )}
     </Container>
   );
 }

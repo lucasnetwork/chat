@@ -25,6 +25,7 @@
         "react/react-in-jsx-scope":"off",
         "import/no-unresolved":"off",
         "jsx-a11y/alt-text":"off",
-        "import/extensions":"off"
+        "import/extensions":"off",
+        "react/function-component-definition":"off"
     }
 }
