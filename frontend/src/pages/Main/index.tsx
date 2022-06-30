@@ -46,7 +46,9 @@ function Main() {
   return (
     <Container>
       <aside>
-        <button type="button">Novo Contato</button>
+        <button className="new_contact" type="button">
+          Novo Contato
+        </button>
         {messages.map((message, index) => (
           <ChatButton
             key={message.phone}
@@ -80,6 +82,7 @@ function Main() {
         />
       ) : (
         <form
+          className="new_phone"
           onSubmit={(e) => {
             e.preventDefault();
             console.log(e);
@@ -98,17 +101,29 @@ function Main() {
             setPhone('');
           }}
         >
-          <input
-            placeholder="telefone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <input
-            placeholder="Digite aqui"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-          />
-          <button type="submit">clicar</button>
+          <fieldset>
+            <label htmlFor="phone">
+              Telefone
+              <input
+                id="phone"
+                placeholder="telefone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+          </fieldset>
+          <fieldset>
+            <label htmlFor="message">
+              Mensagem
+              <input
+                id="message"
+                placeholder="Digite aqui"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+              />
+            </label>
+          </fieldset>
+          <button type="submit">Enviar</button>
         </form>
       )}
     </Container>
