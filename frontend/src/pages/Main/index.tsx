@@ -64,20 +64,20 @@ function Main() {
       </aside>
       {phoneContact ? (
         <Chat
+          messages={messages[phoneContact.index].messages}
           onSubmit={(e) => {
             console.log(e);
             socket.emit('message', {
               phoneTo: phone,
               phone: localStorage.getItem('phone'),
-              message: data,
+              message: e,
             });
-            setMessages((props) => [
-              ...props,
-              {
-                messages: [data],
-                phone,
-              },
-            ]);
+            const newMessages = [...messages];
+            newMessages[phoneContact.index].messages = [
+              ...newMessages[phoneContact.index].messages,
+              e,
+            ];
+            setMessages(newMessages);
           }}
         />
       ) : (

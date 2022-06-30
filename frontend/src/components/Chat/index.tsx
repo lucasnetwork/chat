@@ -1,16 +1,22 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable no-unused-vars */
 import { FC, useState } from 'react';
 import Container from './styles';
 
 interface ChatProps {
   onSubmit: (message: string) => void;
+  messages: string[];
 }
 
-const Chat: FC<ChatProps> = ({ onSubmit }) => {
+const Chat: FC<ChatProps> = ({ onSubmit, messages }) => {
   const [message, setMessage] = useState('');
   return (
     <Container>
-      <div />
+      <div>
+        {messages.map((oldMessage, index) => (
+          <p key={index}>{oldMessage}</p>
+        ))}
+      </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
