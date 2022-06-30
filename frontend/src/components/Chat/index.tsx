@@ -20,8 +20,10 @@ const Chat: FC<ChatProps> = ({ onSubmit, messages }) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(message);
-          setMessage('');
+          if (message) {
+            onSubmit(message);
+            setMessage('');
+          }
         }}
       >
         <input value={message} onChange={(e) => setMessage(e.target.value)} />

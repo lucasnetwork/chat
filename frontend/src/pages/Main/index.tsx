@@ -17,13 +17,11 @@ function Main() {
   >(undefined);
   useEffect(() => {
     socket.on('connect', () => {
-      console.log('conectado');
       socket.emit('identity', {
         phone: localStorage.getItem('phone'),
       });
       socket.on('message', (e) => {
         const newMessages = [...messages];
-        console.log('data', e);
         const findIndex = messages.findIndex(
           (value) => value.phone === e.phone,
         );
@@ -38,7 +36,6 @@ function Main() {
             phone: e.phone,
           });
         }
-        console.log('messages', newMessages);
         setMessages(newMessages);
       });
     });
@@ -46,7 +43,13 @@ function Main() {
   return (
     <Container>
       <aside>
-        <button className="new_contact" type="button">
+        <button
+          onClick={() => {
+            setPhoneContact(undefined);
+          }}
+          className="new_contact"
+          type="button"
+        >
           Novo Contato
         </button>
         {messages.map((message, index) => (
@@ -66,7 +69,6 @@ function Main() {
         <Chat
           messages={messages[phoneContact.index].messages}
           onSubmit={(e) => {
-            console.log(e);
             socket.emit('message', {
               phoneTo: phone,
               phone: localStorage.getItem('phone'),
@@ -85,7 +87,6 @@ function Main() {
           className="new_phone"
           onSubmit={(e) => {
             e.preventDefault();
-            console.log(e);
             socket.emit('message', {
               phoneTo: phone,
               phone: localStorage.getItem('phone'),

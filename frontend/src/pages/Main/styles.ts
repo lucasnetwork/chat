@@ -19,6 +19,7 @@ export default styled.div`
     border: none;
     color: #fff;
     font-size: 2rem;
+    cursor: pointer;
   }
 
   .new_phone {
