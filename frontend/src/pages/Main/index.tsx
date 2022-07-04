@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react';
 import socketIOClient from 'socket.io-client';
+import axios from 'axios';
 import Container from './styles';
 import ChatButton from '../../components/ChatButton';
 import Chat from '../../components/Chat';
@@ -16,9 +17,39 @@ function Main() {
     { phone: string; index: number } | undefined
   >(undefined);
   useEffect(() => {
+    const currentPhone = localStorage.getItem('phone');
+
+    async function getMessages() {
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/message/${currentPhone}`,
+        );
+        console.log(response);
+        const newMessages: { messages: string[]; phone: string }[] = [];
+        response.data.forEach((res: any) => {
+          const existMessage = newMessages.findIndex(
+            (group) => group.phone === res.toIdUser,
+          );
+          if (existMessage >= 0) {
+            newMessages[existMessage].messages.push(res.message);
+            return;
+          }
+          newMessages.push({
+            messages: [res.message],
+            phone: res.toIdUser,
+          });
+        });
+
+        setMessages(newMessages);
+      } catch {
+        console.log('error');
+      }
+    }
+    getMessages();
+
     socket.on('connect', () => {
       socket.emit('identity', {
-        phone: localStorage.getItem('phone'),
+        phone: currentPhone,
       });
       socket.on('message', (e) => {
         const newMessages = [...messages];
