@@ -8,8 +8,8 @@ export class MessageService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
   ) {}
-  getHello(): Promise<MessageDocument[]> {
-    return this.messageModel.find().exec();
+  all(phone: string): Promise<MessageDocument[]> {
+    return this.messageModel.find({ phone }).exec();
   }
 
   async create(object: {

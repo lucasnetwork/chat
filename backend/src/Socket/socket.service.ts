@@ -17,6 +17,7 @@ export class MessageService {
     idUser: string;
     toIdUser: string;
   }): Promise<MessageDocument> {
+    console.log(object);
     const createMessage = new this.messageModel(object);
     return await createMessage.save();
   }

@@ -1,5 +1,6 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { MessageService } from 'src/Message/message.service';
 import { UserService } from 'src/User/user.service';
 @WebSocketGateway({
   cors: {
@@ -7,7 +8,10 @@ import { UserService } from 'src/User/user.service';
   },
 })
 export class SocketProvider {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly messageService: MessageService,
+  ) {}
   @SubscribeMessage('identity')
   async getMessages(socket: Socket, data: any): Promise<void> {
     try {
@@ -28,6 +32,11 @@ export class SocketProvider {
   async sendMessage(socket: Socket, data: any): Promise<void> {
     try {
       const existUser = await this.userService.find(data.phoneTo as number);
+      await this.messageService.create({
+        idUser: data.phone,
+        message: data.message,
+        toIdUser: data.phoneTo,
+      });
       if (existUser) {
         socket.to(existUser?.phone?.toString()).emit('message', {
           phone: data.phone,
