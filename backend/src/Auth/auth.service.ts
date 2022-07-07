@@ -9,6 +9,7 @@ export class AuthService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
   async validateUser(phone: number): Promise<UserDocument> {
     const existPhone = this.userModel.findOne({ phone }).exec();
+    console.log('user', existPhone);
     if (existPhone) {
       return existPhone;
     }
