@@ -9,5 +9,6 @@ import { Message, MessageSchema } from '../database/schemas/messageSchema';
   ],
   controllers: [MessageController],
   providers: [MessageService],
+  exports: [MessageService],
 })
 export class MessageModule {}
