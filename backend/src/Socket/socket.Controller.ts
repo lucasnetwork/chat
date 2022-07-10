@@ -1,5 +1,7 @@
+import { UseGuards } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { JwtAuthGuard } from 'src/Auth/guards/jwt.auth.guard';
 import { MessageService } from 'src/Message/message.service';
 import { UserService } from 'src/User/user.service';
 @WebSocketGateway({
@@ -7,6 +9,7 @@ import { UserService } from 'src/User/user.service';
     origin: '*',
   },
 })
+@UseGuards(JwtAuthGuard)
 export class SocketProvider {
   constructor(
     private readonly userService: UserService,
