@@ -1,12 +1,15 @@
 import { Controller, Post, Req, Request, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from 'src/Auth/auth.service';
 
 @Controller('login')
 export class SessionController {
-  @UseGuards(AuthGuard('local'))
+  constructor(private readonly authService: AuthService) {}
   @Post()
   async create(@Request() req) {
     console.log(req);
-    return req.user;
+    const response = await this.authService.validateUser(req.body.phone);
+    const token = this.authService.login(response.id);
+    console.log(token);
+    return token;
   }
 }
