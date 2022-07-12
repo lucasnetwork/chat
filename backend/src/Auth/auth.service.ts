@@ -11,13 +11,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async validateUser(phone: number): Promise<UserDocument> {
-    const existPhone = this.userModel.findOne({ phone }).exec();
+    const existPhone = await this.userModel.findOne({ phone }).exec();
     console.log('user', existPhone);
     if (existPhone) {
       return existPhone;
     }
     const createUser = new this.userModel({ phone });
-    await createUser.save();
+    return await createUser.save();
   }
 
   async login(id: number) {

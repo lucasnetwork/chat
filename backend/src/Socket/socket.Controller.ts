@@ -4,12 +4,13 @@ import { Socket } from 'socket.io';
 import { JwtAuthGuard } from 'src/Auth/guards/jwt.auth.guard';
 import { MessageService } from 'src/Message/message.service';
 import { UserService } from 'src/User/user.service';
+import { decode } from 'jsonwebtoken';
+// @UseGuards(JwtAuthGuard)
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-@UseGuards(JwtAuthGuard)
 export class SocketProvider {
   constructor(
     private readonly userService: UserService,
@@ -19,13 +20,13 @@ export class SocketProvider {
   async getMessages(socket: Socket, data: any): Promise<void> {
     try {
       console.log(data);
-      const existUser = await this.userService.find(data.phone as number);
+      const token = decode(
+        socket.handshake.headers.authorization.split(' ')[1],
+      ) as { id: string };
+
+      const existUser = await this.userService.find(token.id);
       if (existUser) {
         socket.join(existUser?.phone?.toString());
-      } else {
-        const newUser = await this.userService.create(data.phone as string);
-        newUser.save();
-        socket.join(newUser.phone.toString());
       }
     } catch {
       console.log('error');
@@ -33,16 +34,21 @@ export class SocketProvider {
   }
   @SubscribeMessage('message')
   async sendMessage(socket: Socket, data: any): Promise<void> {
+    console.log(socket.handshake.headers.authorization);
+    const token = decode(
+      socket.handshake.headers.authorization.split(' ')[1],
+    ) as { id: string };
+
     try {
-      const existUser = await this.userService.find(data.phoneTo as number);
+      const existUser = await this.userService.find(token.id);
       await this.messageService.create({
-        idUser: data.phone,
+        idUser: existUser?.phone.toString(),
         message: data.message,
         toIdUser: data.phoneTo,
       });
       if (existUser) {
-        socket.to(existUser?.phone?.toString()).emit('message', {
-          phone: data.phone,
+        socket.to(data.phoneTo).emit('message', {
+          phone: existUser?.phone,
           message: data.message,
         });
       }
