@@ -9,6 +9,9 @@ export class UserService {
   find(id: string): Promise<UserDocument> {
     return this.userModel.findOne({ _id: id }).exec();
   }
+  findByPhone(phone: number): Promise<UserDocument> {
+    return this.userModel.findOne({ phone: phone }).exec();
+  }
 
   async create(phone: string): Promise<UserDocument> {
     const createUser = new this.userModel({ phone });

@@ -11,6 +11,7 @@ export class MessageController {
   @Get()
   all(@Req() request): Promise<MessageDocument[]> {
     if (request.user?.id) {
+      console.log('request', request.user?.id);
       return this.messageService.all(request.user.id as string);
     }
   }

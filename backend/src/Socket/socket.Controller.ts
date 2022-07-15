@@ -25,8 +25,10 @@ export class SocketProvider {
       ) as { id: string };
 
       const existUser = await this.userService.find(token.id);
+      console.log(existUser);
       if (existUser) {
-        socket.join(existUser?.phone?.toString());
+        console.log('join');
+        socket.join(existUser.phone.toString());
       }
     } catch {
       console.log('error');
@@ -38,22 +40,26 @@ export class SocketProvider {
     const token = decode(
       socket.handshake.headers.authorization.split(' ')[1],
     ) as { id: string };
-
     try {
-      const existUser = await this.userService.find(token.id);
-      await this.messageService.create({
-        idUser: existUser?.phone.toString(),
-        message: data.message,
-        toIdUser: data.phoneTo,
-      });
+      const existUser = await this.userService.findByPhone(data.phoneTo);
+      const userSend = await this.userService.find(token.id);
+
       if (existUser) {
-        socket.to(data.phoneTo).emit('message', {
-          phone: existUser?.phone,
+        await this.messageService.create({
+          idUser: token.id,
+          message: data.message,
+          toIdUser: existUser._id,
+        });
+        console.log('token', data);
+        console.log('token2', existUser);
+        console.log('token3', token);
+        socket.to(existUser.phone.toString()).emit('message', {
+          phone: userSend?._id,
           message: data.message,
         });
       }
-    } catch {
-      console.log('error');
+    } catch (e) {
+      console.log('error', e);
     }
   }
   test(data) {
