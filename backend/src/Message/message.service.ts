@@ -13,7 +13,8 @@ export class MessageService {
   all(id: string): Promise<MessageDocument[]> {
     return this.messageModel
       .find({ $or: [{ idUser: id }, { toIdUser: id }] })
-      .populate('idUser', 'toIdUser')
+      .populate('idUser', 'phone')
+      .populate('toIdUser', 'phone')
       .exec();
   }
 

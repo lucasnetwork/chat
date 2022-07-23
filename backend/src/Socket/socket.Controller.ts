@@ -54,7 +54,7 @@ export class SocketProvider {
         console.log('token2', existUser);
         console.log('token3', token);
         socket.to(existUser.phone.toString()).emit('message', {
-          phone: userSend?._id,
+          phone: userSend?.phone,
           message: data.message,
         });
       }
