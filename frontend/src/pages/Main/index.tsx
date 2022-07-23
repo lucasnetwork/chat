@@ -1,12 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from 'react';
-import socketIOClient from 'socket.io-client';
+import socketIOClient, { Socket } from 'socket.io-client';
 import axios from 'axios';
 import Container from './styles';
 import ChatButton from '../../components/ChatButton';
 import Chat from '../../components/Chat';
 
-const socket = socketIOClient('http://localhost:3000');
 function Main() {
   const [data, setData] = useState('');
   const [phone, setPhone] = useState('');
@@ -16,27 +15,48 @@ function Main() {
   const [phoneContact, setPhoneContact] = useState<
     { phone: string; index: number } | undefined
   >(undefined);
+  const [socket, setSocket] = useState<Socket>();
+  const [socketOn, setSocketOn] = useState(false);
   useEffect(() => {
+    if (socketOn) {
+      return;
+    }
+    setSocketOn(true);
+    const token = localStorage.getItem('token');
+    const newSocker = socketIOClient('http://localhost:3000', {
+      autoConnect: false,
+      extraHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setSocket(newSocker);
     const currentPhone = localStorage.getItem('phone');
 
     async function getMessages() {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/message/${currentPhone}`,
-        );
-        console.log(response);
+        const response = await axios.get(`http://localhost:3000/message`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const newMessages: { messages: string[]; phone: string }[] = [];
         response.data.forEach((res: any) => {
           const existMessage = newMessages.findIndex(
-            (group) => group.phone === res.toIdUser,
+            (group) =>
+              group.phone === res.toIdUser.phone ||
+              group.phone === res.idUser.phone,
           );
           if (existMessage >= 0) {
             newMessages[existMessage].messages.push(res.message);
             return;
           }
+          let newPhone = res.toIdUser.phone;
+          if (newPhone?.toString() === currentPhone) {
+            newPhone = res.idUser.phone;
+          }
           newMessages.push({
             messages: [res.message],
-            phone: res.toIdUser,
+            phone: newPhone,
           });
         });
 
@@ -46,31 +66,33 @@ function Main() {
       }
     }
     getMessages();
-
-    socket.on('connect', () => {
-      socket.emit('identity', {
-        phone: currentPhone,
-      });
-      socket.on('message', (e) => {
-        const newMessages = [...messages];
-        const findIndex = messages.findIndex(
-          (value) => value.phone === e.phone,
-        );
-        if (findIndex > -1) {
-          newMessages[findIndex].messages = [
-            ...newMessages[findIndex].messages,
-            e.message,
-          ];
-        } else {
-          newMessages.push({
-            messages: [e.message],
-            phone: e.phone,
-          });
-        }
-        setMessages(newMessages);
+    newSocker.connect();
+    newSocker.on('connect', function () {
+      newSocker.emit('identity');
+      newSocker.on('message', function (e) {
+        console.log('test');
+        setMessages((oldMessages) => {
+          const newMessagesSocket = [...oldMessages];
+          const findIndex = newMessagesSocket.findIndex(
+            (value) => value.phone === e.phone,
+          );
+          if (findIndex > -1) {
+            newMessagesSocket[findIndex].messages = [
+              ...newMessagesSocket[findIndex].messages,
+              e.message,
+            ];
+          } else {
+            newMessagesSocket.push({
+              messages: [e.message],
+              phone: e.phone,
+            });
+          }
+          console.log('newMessagesSocket', newMessagesSocket);
+          return newMessagesSocket;
+        });
       });
     });
-  }, []);
+  }, [messages, socketOn]);
   return (
     <Container>
       <aside>
@@ -100,17 +122,18 @@ function Main() {
         <Chat
           messages={messages[phoneContact.index].messages}
           onSubmit={(e) => {
-            socket.emit('message', {
-              phoneTo: phone,
-              phone: localStorage.getItem('phone'),
-              message: e,
-            });
-            const newMessages = [...messages];
-            newMessages[phoneContact.index].messages = [
-              ...newMessages[phoneContact.index].messages,
-              e,
-            ];
-            setMessages(newMessages);
+            if (socket) {
+              socket.emit('message', {
+                phoneTo: phone,
+                message: e,
+              });
+              const newMessages = [...messages];
+              newMessages[phoneContact.index].messages = [
+                ...newMessages[phoneContact.index].messages,
+                e,
+              ];
+              setMessages(newMessages);
+            }
           }}
         />
       ) : (
@@ -118,19 +141,27 @@ function Main() {
           className="new_phone"
           onSubmit={(e) => {
             e.preventDefault();
-            socket.emit('message', {
-              phoneTo: phone,
-              phone: localStorage.getItem('phone'),
-              message: data,
-            });
-            setMessages((props) => [
-              ...props,
-              {
-                messages: [data],
-                phone,
-              },
-            ]);
-            setPhone('');
+            if (socket) {
+              socket.emit('message', {
+                phoneTo: phone,
+                phone: localStorage.getItem('phone'),
+                message: data,
+              });
+              const newMessages = [...messages];
+              const messageIndex = newMessages.findIndex(
+                (message) => message.phone === phone,
+              );
+              if (messageIndex > -1) {
+                newMessages[messageIndex].messages.push(data);
+              } else {
+                newMessages.push({
+                  messages: [data],
+                  phone,
+                });
+              }
+              setMessages(newMessages);
+              setPhone('');
+            }
           }}
         >
           <fieldset>

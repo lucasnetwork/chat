@@ -15,8 +15,9 @@ function Login() {
             .post('http://localhost:3000/login', {
               phone,
             })
-            .then(() => {
+            .then((response) => {
               localStorage.setItem('phone', phone);
+              localStorage.setItem('token', response.data.access_token);
               navigate('/chat');
             });
         }}
